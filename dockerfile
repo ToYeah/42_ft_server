@@ -7,8 +7,11 @@ lsb-release \
 nginx \
 mariadb-server
 
-RUN service mysql start; \
-mysql -u root -p
+RUN service mysql start && \
+mysql -u root -p \
+echo '\n' && \
+CREATE DATABASE wpdb; create user 'wpuser'@'localhost' identified by '{wp0102}'; 
+
 
 
 CMD tail -f /dev/null
