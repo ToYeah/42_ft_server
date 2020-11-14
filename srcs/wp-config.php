@@ -26,7 +26,7 @@ define( 'DB_NAME', 'wpdb' );
 define( 'DB_USER', 'wpuser' );
 
 /** MySQL database password */
-define( 'DB_PASSWORD', 'wp0102' );
+define( 'DB_PASSWORD', 'wppassword' );
 
 /** MySQL hostname */
 define( 'DB_HOST', 'localhost' );
