@@ -10,7 +10,9 @@ RUN		set -eux;\
 		mariadb-server \
 		php-fpm \
 		php-mysql \
-		supervisor
+		supervisor \
+		php-mbstring \
+		openssl
 
 RUN		set -eux;\
 		service mysql start;\
@@ -26,14 +28,24 @@ RUN		set -eux;\
 		rm /tmp/latest.tar.gz;
 
 COPY	./srcs/wp-config.php /var/www/html/wordpress/wp-config.php
-COPY	./srcs/wordpress.conf /etc/nginx/sites-available/wordpress.conf
+COPY	./srcs/ftserver.conf /etc/nginx/sites-available/wordpress.conf
+
 RUN		chown -R www-data:www-data /var/www/html/wordpress;\
 		ln -s /etc/nginx/sites-available/wordpress.conf /etc/nginx/sites-enabled;\
 		unlink /etc/nginx/sites-enabled/default;
 
-#RUN		wget -O /tmp/phpmyadmin.tar.gz https://files.phpmyadmin.net/phpMyAdmin/5.0.4/phpMyAdmin-5.0.4-all-languages.tar.gz;\
-#		tar -xvzf phpmyadmin.tar.gz -C /usr/share/;\
+RUN		wget -O /tmp/phpmyadmin.tar.gz --no-check-certificate https://files.phpmyadmin.net/phpMyAdmin/4.9.7/phpMyAdmin-4.9.7-all-languages.tar.gz;\
+		tar -xvzf /tmp/phpmyadmin.tar.gz -C /var/www/html/;\
+		mv /var/www/html/phpMyAdmin-4.9.7-all-languages /var/www/html/phpMyAdmin;\
+		mkdir -p /var/lib/phpmyadmin/tmp;\
+		chown -R www-data:www-data /var/lib/phpmyadmin/tmp;
 
+COPY	./srcs/config.inc.php /var/www/html/phpMyAdmin/config.inc.php
+
+RUN		 mkdir /etc/nginx/ssl;\
+		 openssl genrsa -out /etc/nginx/ssl/server.key 2048;\
+		 openssl req -new -subj /CN=localhost -key /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.csr;\
+		 openssl x509 -days 3650 -req -signkey /etc/nginx/ssl/server.key -in /etc/nginx/ssl/server.csr -out /etc/nginx/ssl/server.crt;
 
 COPY	./srcs/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
